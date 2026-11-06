@@ -2,8 +2,8 @@
 open SqlBuilder.Core
 
 let includeName = true
-let id = { Name = "Id"; Alias = None }
-let name = { Name = "Name"; Alias = Some "AttendeeName" }
+let id = { Name = "a.Id"; Alias = None }
+let name = { Name = "a.Name"; Alias = Some "AttendeeName" }
 let fields = if includeName then [ id; name ] else [ id ]
 let Joins =
     [ { Kind = Inner
@@ -12,7 +12,7 @@ let Joins =
         LeftColumn = "a.Id"
         RightColumn = "ea.AttendeeId" }
 
-      {  Kind = LeftOuter
+      {  Kind = FullOuter
          Table = "Events"
          Alias = Some "e"
          LeftColumn = "ea.EventId"
@@ -61,6 +61,6 @@ let eventsQuery =
 
 
     
-//printfn "%s" (toSql query)
+printfn "%s" (toSql query)
 printfn "%s" (toSql eventsQuery)
 

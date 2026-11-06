@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SqlBuilder.Core\SqlBuilder.Core.fsproj" />
+    <ProjectReference Include="..\SqlBuilder.Tests\SqlBuilder.Tests.fsproj" />
   </ItemGroup>
 
 </Project>

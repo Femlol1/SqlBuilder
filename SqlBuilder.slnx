@@ -1,4 +1,8 @@
 <Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="README.md" />
+  </Folder>
   <Project Path="SqlBuilder.Cli/SqlBuilder.Cli.fsproj" />
   <Project Path="SqlBuilder.Core/SqlBuilder.Core.fsproj" Id="7bf9886b-0c72-4f73-b74d-1ff1d4f9bd66" />
+  <Project Path="SqlBuilder.Tests/SqlBuilder.Tests.fsproj" />
 </Solution>

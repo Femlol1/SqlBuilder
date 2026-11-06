@@ -3,6 +3,8 @@
 type JoinKind =
     | Inner
     | LeftOuter
+    | RightOuter
+    | FullOuter
 
 type Join =
     { Kind: JoinKind
@@ -37,16 +39,25 @@ let renderField (field: SelectField) =
     | Some alias -> $"{field.Name} AS {alias}"
     | None -> field.Name
 
+let private quoteIdentifier (name: string) =
+    "[" + name.Replace("]", "]]") + "]"
+
+let private renderTable name alias =
+    let tableName = quoteIdentifier name
+
+    match alias with
+    | Some value -> $"{tableName} AS {quoteIdentifier value}"
+    | None -> tableName
+
 let renderJoin (join: Join) =
     let joinType =
         match join.Kind with
         | Inner -> "INNER JOIN"
         | LeftOuter -> "LEFT OUTER JOIN"
-    let aliasPart =
-        match join.Alias with
-        | Some alias -> $" AS {alias}"
-        | None -> ""
-    $"{joinType} {join.Table}{aliasPart} ON {join.LeftColumn} = {join.RightColumn}"
+        | RightOuter -> "RIGHT OUTER JOIN"
+        | FullOuter -> "FULL OUTER JOIN"
+    let table = renderTable join.Table join.Alias
+    $"{joinType} {table} ON {join.LeftColumn} = {join.RightColumn}"
 
 
 let renderValue value =
@@ -60,18 +71,21 @@ let rec renderCondition condition =
     | And (left, right) -> $"({renderCondition left} AND {renderCondition right})"
     | Or (left, right) -> $"({renderCondition left} OR {renderCondition right})"
 
+
+
 let toSql (query: SelectQuery) =
     let columns =
         match query.Fields with
         | [] -> "*"
         | fields -> fields |> List.map renderField |> String.concat ", "
 
-    let fromClause =
-        match query.TableAlias with
-        | Some alias -> $"FROM {query.Table} AS {alias}"
-        | None -> $"FROM {query.Table}"
+    let tableName = quoteIdentifier query.Table
+
+    let fromClause = $"FROM {renderTable query.Table query.TableAlias}"
+
     let selectLine = $"SELECT {columns} {fromClause}"
     let joinLines = query.Joins |> List.map renderJoin
+
     let whereLines =
         match query.Where with
         | Some condition -> [ $"WHERE {renderCondition condition}" ]
@@ -79,3 +93,5 @@ let toSql (query: SelectQuery) =
 
     let lines = (selectLine :: joinLines) @ whereLines
     String.concat "\n" lines + ";"
+
+
