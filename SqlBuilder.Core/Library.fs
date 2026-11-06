@@ -5,7 +5,7 @@ type JoinKind =
     | LeftOuter
     | RightOuter
     | FullOuter
-
+/// Joins a table by matching two column references, such as e.Id and ea.EventId.
 type Join =
     { Kind: JoinKind
       Table: string
@@ -39,9 +39,12 @@ let renderField (field: SelectField) =
     | Some alias -> $"{field.Name} AS {alias}"
     | None -> field.Name
 
+// Escape closing brackets inside SQL Server identifiers.
 let private quoteIdentifier (name: string) =
     "[" + name.Replace("]", "]]") + "]"
 
+
+// Double apostrophes so names like O'Neil render correctly.
 let private renderTable name alias =
     let tableName = quoteIdentifier name
 
@@ -65,6 +68,7 @@ let renderValue value =
     | Text text -> "'" + text.Replace("'", "''") + "'"
     | Number number -> sprintf "%d" number
 
+// Parenthesise AND and OR groups to preserve their meaning.
 let rec renderCondition condition =
     match condition with
     | Equal (column, value) -> $"{column} = {renderValue value}"
@@ -72,8 +76,9 @@ let rec renderCondition condition =
     | Or (left, right) -> $"({renderCondition left} OR {renderCondition right})"
 
 
-
+/// Converts a query record into a SQL Server SELECT statement.
 let toSql (query: SelectQuery) =
+    // An empty field list means SELECT *.
     let columns =
         match query.Fields with
         | [] -> "*"
@@ -84,6 +89,7 @@ let toSql (query: SelectQuery) =
     let fromClause = $"FROM {renderTable query.Table query.TableAlias}"
 
     let selectLine = $"SELECT {columns} {fromClause}"
+    // Preserves join order because a later join can use an earlier alias.
     let joinLines = query.Joins |> List.map renderJoin
 
     let whereLines =

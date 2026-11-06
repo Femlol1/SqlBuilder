@@ -1,6 +1,6 @@
 ﻿
 open SqlBuilder.Core
-
+// example usage of the SqlBuilder library to construct and render SQL queries.
 let includeName = true
 let id = { Name = "a.Id"; Alias = None }
 let name = { Name = "a.Name"; Alias = Some "AttendeeName" }
